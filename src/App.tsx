@@ -3,9 +3,9 @@ import { fetchQuizQuestions } from './API'
 import QuestionCard from './components/QuestionCard'
 import { QuestionState, Difficulty } from './API'
 
-type AnswerObject = {
+export type AnswerObject = {
 	question: string;
-	answer: string;
+	userAnswer: string;
 	correct: boolean;
 	correctAnswer: string;
 }
@@ -38,14 +38,33 @@ const App = () => {
 	}
 	
 	const checkAnswer = (e: React.MouseEvent<HTMLButtonElement>) => {
-		
+		if (!gameOver){
+			const userAnswer = e.currentTarget.value
+			const correct = questions[number].correct_answer === userAnswer
+			if(correct){
+				setScore(prev => prev+1)
+			}
+			const answerObject = {
+				question: questions[number].question,
+				userAnswer,
+				correct,
+				correctAnswer: questions[number].correct_answer
+			}
+			setUserAnswers(prev => [...prev, answerObject])
+		}
 	}
 	
 	const nextQuestion = () => {
+		const nextQuestion = number + 1
 		
+		if (nextQuestion === TOTAL_QUESTIONS){
+			setGameOver(true)
+		} else {
+			setNumber(nextQuestion)
+		}
 	}
-	
-  return (
+
+	return (
     <div className="App">
       <h1>REACT QUIZ</h1>
 		  {gameOver || userAnswers.length === TOTAL_QUESTIONS ? (
@@ -64,7 +83,12 @@ const App = () => {
 				callback={checkAnswer}
 			  />
 		  )}
-		  <button className="next" onClick={nextQuestion}>Next Question</button>
+		  {!gameOver && 
+			  !loading && 
+			  userAnswers.length === number+1 && 
+			  number !== TOTAL_QUESTIONS - 1 ? (
+				<button className="next" onClick={nextQuestion}>Next Question</button>
+		  	  ) : null}
     </div>
   );
 }
